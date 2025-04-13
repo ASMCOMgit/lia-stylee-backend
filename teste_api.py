@@ -9,5 +9,6 @@ headers = {
 }
 
 response = requests.post(url, json=payload, headers=headers)
+
 print("Status Code:", response.status_code)
 print("Resposta da API:", response.text)

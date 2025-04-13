@@ -1,47 +1,48 @@
-const { Configuration, OpenAIApi } = require("openai");
+// api/chat.js
 
-module.exports = async (req, res) => {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const { message } = req.body;
+  const apiKey = process.env.OPENAI_API_KEY;
 
-  if (!message) {
-    return res.status(400).json({ error: "Mensagem não fornecida." });
+  if (!apiKey) {
+    console.error("API Key não definida!");
+    return res.status(500).json({ error: 'Chave da API não configurada' });
   }
-
-  const openaiApiKey = process.env.OPENAI_API_KEY;
-
-  if (!openaiApiKey) {
-    return res.status(500).json({ error: "Chave da OpenAI não configurada." });
-  }
-
-  const configuration = new Configuration({
-    apiKey: openaiApiKey,
-  });
-
-  const openai = new OpenAIApi(configuration);
 
   try {
-    const completion = await openai.createChatCompletion({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: "Você é um assistente especializado em moda e estilo da marca STYLEE.",
-        },
-        {
-          role: "user",
-          content: message,
-        },
-      ],
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'user',
+            content: message
+          }
+        ]
+      })
     });
 
-    const reply = completion.data.choices[0].message.content;
-    return res.status(200).json({ reply });
-  } catch (err) {
-    console.error("Erro na chamada da OpenAI:", err.response?.data || err.message);
-    return res.status(500).json({ error: "Erro na resposta da IA." });
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("Erro da API OpenAI:", data);
+      return res.status(500).json({ error: data.error?.message || 'Erro na resposta da IA' });
+    }
+
+    const reply = data.choices[0].message.content;
+    res.status(200).json({ reply });
+
+  } catch (error) {
+    console.error("Erro ao chamar OpenAI:", error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
   }
-};
+}
