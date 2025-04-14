@@ -4,11 +4,18 @@ export default async function handler(req, res) {
   }
 
   const { message } = req.body;
+  console.log("📩 Mensagem recebida do cliente:", message);
+
   const apiKey = process.env.OPENAI_API_KEY;
 
   if (!apiKey) {
-    console.error("API Key não definida!");
+    console.error("❌ API Key não definida!");
     return res.status(500).json({ error: 'Chave da API não configurada' });
+  }
+
+  if (!message || message.length < 2) {
+    console.warn("⚠️ Nenhuma mensagem ou mensagem muito curta recebida.");
+    return res.status(400).json({ error: 'Mensagem inválida' });
   }
 
   try {
@@ -36,17 +43,23 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
+    console.log("✅ Resposta da OpenAI:", data);
 
     if (!response.ok) {
-      console.error("Erro da API OpenAI:", data);
+      console.error("❌ Erro da API OpenAI:", data);
       return res.status(500).json({ error: data.error?.message || 'Erro na resposta da IA' });
     }
 
-    const reply = data.choices[0].message.content;
+    const reply = data.choices?.[0]?.message?.content?.trim();
+    if (!reply) {
+      console.warn("⚠️ Resposta da IA vazia.");
+      return res.status(500).json({ error: 'Resposta da IA vazia' });
+    }
+
     res.status(200).json({ reply });
 
   } catch (error) {
-    console.error("Erro ao chamar OpenAI:", error);
+    console.error("❌ Erro ao chamar OpenAI:", error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }
