@@ -1,5 +1,3 @@
-// api/chat.js
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -22,9 +20,15 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'gpt-3.5-turbo',
+        temperature: 0.8,
+        max_tokens: 300,
         messages: [
           {
-            role: 'user',
+            role: "system",
+            content: "Você é a LIA, assistente virtual da STYLEE, uma marca brasileira de bolsas femininas com estilo autêntico e sofisticação. Sua missão é ajudar cada cliente a encontrar a bolsa ideal com base no seu gosto pessoal, ocasião ou estilo desejado. Responda sempre de forma elegante, acolhedora e objetiva, como se estivesse atendendo presencialmente no showroom da STYLEE. Se possível, recomende categorias de bolsas como Mini Bags, Bolsas Porta-Celular, Bolsas em PU ou Mochilas Estilosas. Use frases que transmitam empatia e bom gosto."
+          },
+          {
+            role: "user",
             content: message
           }
         ]
