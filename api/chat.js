@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-  // Habilita CORS
+  // CORS headers
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -70,7 +70,7 @@ Usuário: ${message}
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-3.5-turbo',
         temperature: 0.6,
         max_tokens: 400,
         messages: [
